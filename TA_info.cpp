@@ -1,24 +1,23 @@
 /*
- * student_info.cpp
+ * TA_info.cpp
  *
- *  Created on: 04-Feb-2015
+ *  Created on: 08-Feb-2015
  *      Author: Chayan
  */
+
 #include<iostream>
 #include <string>
 #include <list>
 using namespace std;
-class student_info
+class TA_info
 {
 public:
 	string Entry_No ;
 	string Name;
-	string DOB;
-	string Department;
-	string Degree;
 	string password;
 	list<string> subjects;
 };
+
 
 
 

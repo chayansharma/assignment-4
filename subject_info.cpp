@@ -13,9 +13,8 @@ class subject_info
 public:
 	string subject_id;
 	string subject_name;
-	int credits;
-	int students_regiestered;
-	string records_file_name;
+	string credits;
+	list<string> students;
 
 };
 
