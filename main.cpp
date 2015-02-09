@@ -15,25 +15,30 @@
 #include "TA_info.cpp"
 
 using namespace std;
-ofstream myfile;
-char file_1[1024];
-char file_2[1024];
+
+
 bool flag = true;
 student_info obj_student;
 TA_info obj_TA;
 subject_info obj_subject;
 ifstream file;
+ofstream myfile;
+ofstream myfile_2;
 list<string> mylist;
+list<string> mylist_2;
 int count;
 int choice;
 string prefix_student = "./student/";
 string prefix_TA = "./TA/";
 string index_subject = "./subject/index.txt";
+string index_student = "./student/index.txt";
 string prefix_subject = "./subject/";
 string suffix = ".txt";
 stringstream stream_string;
 list<string>::iterator iter;
-
+/** Function to write the contents in the object of subject_info class into the corresponding text file
+    @param sub_name first parameter
+*/
 void update_subject_info(string sub_name)
 {
 	int counter = 0;
@@ -53,6 +58,117 @@ void update_subject_info(string sub_name)
 		myfile.close();
 }
 
+void grade_the_subject()
+{
+	string line,e_no,marks,inp_entry,sub_name,temp,grade;
+	mylist.clear();
+	int counter = 0;
+	int ind_marks;
+	cout<<"Enter the subject code : ";
+	getline(cin,sub_name);
+	file.open(prefix_subject+sub_name+suffix);
+	getline(file,line);
+	obj_subject.subject_id  =line;
+	getline(file,line);
+	obj_subject.subject_name  = line;
+	getline(file,line);
+	obj_subject.credits  = line;
+	getline(file,line);
+	obj_subject.students.clear();
+	while ( getline (file,line) )
+		{
+			obj_subject.students.push_back(line);
+		}
+	file.close();
+	initial:
+	//system("clear");
+	cout<<"--------------------------  Students registered -------------------"<<endl;
+	for(iter = obj_subject.students.begin(); iter != obj_subject.students.end(); ++iter)
+		cout<<*iter<<endl;
+	cout<<"Input the entry number of student : ";
+	getline(cin,inp_entry);
+	flag = true;
+	for(iter = obj_subject.students.begin(); iter != obj_subject.students.end(); ++iter)
+	{
+		stream_string.str(string() );
+		stream_string.clear();
+		stream_string<<*iter;
+		stream_string>>e_no;
+		if(e_no.compare(inp_entry)==0)
+		{
+			ind_marks = 0;
+			flag = false;
+			stream_string.str(string() );
+			stream_string.clear();
+			stream_string<<*iter;
+			getline(stream_string,marks,' ');
+			while(getline(stream_string,marks,' '))
+			{
+				ind_marks = ind_marks +  atoi(marks.c_str());
+			}
+			*iter = *iter + "total marks : " + to_string(ind_marks);
+			cout<<" Total marks : "<<ind_marks<<endl;
+			cout<<"Enter the grade of the student : ";
+			getline (cin,grade);
+			*iter = *iter + " Grade : " + grade;
+		}
+	}
+	if(flag)
+	{
+		cout<<"Entry Number doesn't exist ... "<<endl;
+		goto initial;
+	}
+
+	counter = 0;
+	file.open(prefix_student+inp_entry+suffix);
+		while ( getline (file,line) )
+		{
+			temp = line;
+			stream_string.str(string() );
+			stream_string.clear();
+			stream_string<<line;
+			stream_string>>line;
+			if(sub_name.compare(line)!=0)
+				mylist.push_back(temp);
+			else
+				mylist.push_back(temp+" Total marks : " + to_string(ind_marks)+ " Grade : " + grade);
+		}
+		file.close();
+
+		myfile.open(prefix_student+inp_entry+suffix);
+
+		for(iter = mylist.begin(); iter != mylist.end(); ++iter)
+		{
+			if(counter+1 == mylist.size())
+				myfile<<*iter;
+			else
+				myfile<<*iter<<endl;
+			counter++;
+		}
+		myfile.close();
+		mylist.clear();
+		flag = true;
+		while(flag)
+		{
+			cout<<"If you want continue press Y or N : ";
+			getline(cin,line);
+			if(line.compare("Y")==0)
+			{	flag = false;
+				goto initial;
+			}
+			else if(line.compare("N")==0)
+			{
+				flag = false;
+				update_subject_info(sub_name);
+			}
+			else
+				cout<<"Invalid choice .."<<endl;
+		}
+}
+
+/**Function which allows the TA to enter the marks
+ *
+ */
 void Enter_marks()
 {
 
@@ -149,7 +265,9 @@ void Enter_marks()
 				cout<<"Invalid choice .."<<endl;
 		}
 }
-
+/**Function to register a subject for a TA
+ *
+ */
 void register_subject_TA()
 {
 	string line,subject_1;
@@ -192,7 +310,9 @@ void register_subject_TA()
 			}
 			myfile.close();
 }
-
+/**
+ * Function to create TA login menu
+ */
 void TA_login()
 {
 		string in_1,in_2,line;
@@ -275,7 +395,8 @@ void TA_login()
 								goto TA_login;
 								break;
 							}
-					case 3 :{	//withdraw_course(in_1);
+					case 3 :{
+								grade_the_subject();
 								break;
 							}
 					case 4 : break;
@@ -289,7 +410,9 @@ void TA_login()
 			}
 		}
 }
-
+/**
+ * Function which allows a student to withdraw the course
+ */
 void withdraw_course()
 {
 	string line,subject_1,subject_2;
@@ -350,7 +473,10 @@ void withdraw_course()
 	myfile.close();
 	mylist.clear();
 }
-
+/**
+ * Function which allows a student to register a course
+ * @param in_1 Entry number of a student registering a course
+ */
 void register_course(string in_1)
 {
 	string line,subject_1;
@@ -382,7 +508,10 @@ void register_course(string in_1)
 	obj_student.subjects.push_back(line);
 
 }
-
+/**
+ * Function to write the contents in the object of student_info class into the corresponding text file
+ * @param in_1 Entry number of a student
+ */
 void write_info(string in_1)
 {
 	int counter = 0;
@@ -405,7 +534,9 @@ void write_info(string in_1)
 	myfile.close();
 
 }
-
+/**
+ * Function to create a student login menu
+ */
 void student_login()
 {
 	string in_1,in_2,line;
@@ -503,7 +634,9 @@ void student_login()
 	}
 	write_info(in_1);
 }
-
+/**
+ * Function to register a new student
+ */
 void new_student_entry()
 {
 	string in;
@@ -516,25 +649,31 @@ void new_student_entry()
 	{
 		file.close();
 		myfile.open(prefix_student+in+suffix);
+		myfile_2.open(index_student,ios::app);
 		myfile<<in<<endl;
-
+		myfile_2<<in;
 		cout<<"Enter the name : ";
 		getline (cin, in);
 		myfile<<in<<endl;
-		cout<<"Enter the Date Of Birth : ";
+		myfile_2<<","<<in;
+		cout<<"Enter the Date Of Birth (dd/mm/yy): ";
 		getline (cin, in);
 		myfile<<in<<endl;
+		myfile_2<<","<<in;
 		cout<<"Enter your department : ";
 		getline (cin, in);
 		myfile<<in<<endl;
+		myfile_2<<","<<in;
 		cout<<"Enter your degree programme : " ;
 		getline (cin, in);
 		myfile<<in<<endl;
+		myfile_2<<","<<in<<endl;
 		cout<<"Enter your account password : ";
 		getline (cin, in);
 		myfile<<in<<endl;
 		myfile<<"Subjects Registered"<<endl;
 		myfile.close();
+		myfile_2.close();
 	}
 	else
 	{
@@ -543,7 +682,9 @@ void new_student_entry()
 	}
 
 }
-
+/**
+ * Function to register a new subject
+ */
 void new_subject_entry()
 {
 	string in,id;
@@ -575,7 +716,9 @@ void new_subject_entry()
 	}
 
 }
-
+/**
+ * Function to register a new TA
+ */
 void new_TA_entry()
 {
 	string in;
@@ -603,6 +746,35 @@ void new_TA_entry()
 		cout<<"Entry number already exist"<<endl;
 	}
 }
+/**
+ * Function to search the records
+ */
+void search_records()
+{
+	string input,token;
+	int count;
+	cout<<"Enter the credentials to be searched (separated by comma) : ";
+	getline(cin,input);
+	stream_string<<input;
+	while(getline(stream_string,token,','))
+	{
+		mylist.push_back(token);
+	}
+
+	file.open(index_student);
+	while(getline(file,token))
+	{
+		count=0;
+		for(iter = mylist.begin(); iter != mylist.end(); ++iter)
+		if(token.find((*iter)) != std::string::npos)
+		{
+			count++;
+		}
+		if(count==mylist.size())
+			cout<<token<<endl;
+	}
+	file.close();
+}
 
 
 int main()
@@ -615,7 +787,8 @@ int main()
 	cout<<"3. Register as new student\n";
 	cout<<"4. Register the new subject\n";
 	cout<<"5. Register the new TA\n";
-	cout<<"6. Quit\n";
+	cout<<"6. Search\n";
+	cout<<"7. Quit\n";
 	cout<<"Enter your choice : ";
 	cin>>choice;
 	cin.ignore();
@@ -641,7 +814,11 @@ int main()
 					new_TA_entry();
 					goto start;
 				}
-		case 6: break;
+		case 6: {
+					search_records();
+					goto start;
+				}
+		case 7: break;
 		default :	{ cout<<"Invalid choice !!!\n";
 					//system("clear");
 						goto start; }
